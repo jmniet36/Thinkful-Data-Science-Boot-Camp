@@ -1,0 +1,90 @@
+-- UNIT 2.2 Project/Drill 5
+
+-- 1. What are the longest trips on rainy days?
+WITH rainy AS
+(
+SELECT
+	DATE(date) date_rain
+FROM
+	weather
+WHERE events = 'Rain'
+GROUP BY 1
+)
+	
+SELECT
+	t.trip_id,
+	t.duration,
+	DATE(t.start_date)
+FROM 
+	trips t
+JOIN
+	rainy r
+ON
+	DATE(t.start_date) = r.date_rain
+ORDER BY duration DESC
+Limit 3;
+		
+-- 2. Which station is full the most often?
+SELECT
+	stations.station_id,
+	stations.name,
+	COUNT (CASE WHEN docks_available=0 THEN 1 END) empty_count
+FROM
+	status
+JOIN
+	stations
+ON
+	stations.station_id = status.station_id
+GROUP BY 1,2
+ORDER BY empty_count DESC;
+
+
+-- 3. Return a list of stations with a count of number of trips starting at that station but ordered by dock count.
+SELECT
+	start_station,
+	dockcount,
+	COUNT(*)
+FROM
+	trips t
+JOIN
+	stations s
+ON
+	s.name = t.start_station
+GROUP BY 1,2
+ORDER BY dockcount ASC;
+
+-- 4. (Challenge) What's the length of the longest trip for each day it rains anywhere?
+WITH rain
+AS
+(
+SELECT
+	DATE(date) day_weather
+FROM
+	weather
+WHERE 
+	events = 'Rain'
+GROUP BY 1
+),
+rainy_trips
+AS
+(
+SELECT
+	trip_id,
+	duration,
+	DATE(trips.start_date) dates_of_rain
+FROM
+	trips
+JOIN
+	rain
+ON
+	rain.day_weather = DATE(trips.start_date)
+ORDER BY duration DESC
+)
+SELECT rainy_trips,
+	MAX (duration) max_time
+FROM 
+	rainy_trips
+GROUP BY 1
+ORDER BY max_time DESC;
+
+	

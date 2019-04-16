@@ -1,0 +1,65 @@
+-- UNIT 1.2: Project/Drill 6
+
+-- 1. What's the most expensive listing? What else can you tell me about the listing?
+SELECT
+	sfo_listings.name,
+	MAX(price) AS max_price,
+	sfo_listings.minimum_nights
+FROM
+	sfo_listings
+GROUP BY
+	sfo_listings.name,
+	sfo_listings.minimum_nights
+ORDER BY 2 DESC
+LIMIT 20;
+
+-- 2. What neighborhoods seem to be the most popular?
+SELECT
+	l.neighbourhood,
+	COUNT(*)
+FROM
+	sfo_listings l
+JOIN
+	sfo_calendar c
+ON
+	l.id = c.listing_id
+WHERE
+	c.available = 'f'
+GROUP BY 
+	l.neighbourhood
+ORDER BY 2 DESC;
+
+-- 3. What time of year is the cheapest time to go to San Francisco?				
+WITH sfo_listings
+AS (
+SELECT
+	id,
+	price
+FROM
+	sfo_listings
+GROUP BY 1,2
+)
+SELECT
+	AVG(l.price) AS avg_price,
+	EXTRACT(MONTH FROM DATE(c.calender_date)) AS month,
+	COUNT(*)
+FROM
+	sfo_calendar c
+JOIN
+	sfo_listings l
+ON
+	c.listing_id = l.id
+GROUP BY 2
+ORDER BY 2 ASC;
+
+-- 4. What about the busiest?
+SELECT
+	COUNT(*) AS monthly_listings,
+	EXTRACT(MONTH FROM DATE(calender_date))
+FROM 
+	sfo_calendar
+WHERE
+	available = 'f'
+GROUP BY 2
+ORDER BY 1 DESC
+--LIMIT 12;
